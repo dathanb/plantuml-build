@@ -1,0 +1,58 @@
+apply plugin:'groovy'
+repositories {
+mavenCentral()
+}
+
+dependencies{
+    implementation 'org.codehaus.groovy:groovy:3.0.4'
+    implementation 'net.sourceforge.plantuml:plantuml:8059'
+}
+
+sourceSets {
+    main{
+        groovy {
+            srcDirs=['.']
+        }
+    }
+}
+
+task generateSequences {
+    List<String> fileArgs = new ArrayList<>();
+
+    plantumlFiles().each { File file ->
+        logger.debug("registering file input: {}", file);
+        inputs.file file;
+
+        File outputFile = getOutputFile(file);
+        logger.debug("registering file output: {}", outputFile);
+        outputs.file outputFile
+        logger.quiet("${file.name} -> ${outputFile.name}")
+
+        fileArgs.add(file.canonicalPath);
+        fileArgs.add(outputFile.canonicalPath)
+    }
+
+    task buildSequences (dependsOn:classes, type:JavaExec) {
+        main='build-sequence'
+        classpath = sourceSets.main.runtimeClasspath
+        args=fileArgs
+    }
+
+    generateSequences.dependsOn(buildSequences)
+}
+
+
+File[] plantumlFiles() {
+    ConfigurableFileTree tree = fileTree(dir: './')
+    tree.include '**/*.puml'
+    tree.getFiles()
+}
+
+File getOutputFile(File file) {
+  File path = file.getParentFile();
+  String inputFileName = file.name;
+  String inputFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf(".puml"));
+  String outputfileName = inputFileNameWithoutExtension + ".svg";
+  return new File(path, outputfileName);
+}
+

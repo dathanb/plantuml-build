@@ -1,0 +1,12 @@
+build
+.gradle/
+
+docs/images/**/*.sequence.svg
+docs/images/**/*.sequence.*.svg
+sequences/**/*.svg
+.idea
+
+# Ignore vi swap files
+*.swp
+
+.DS_Store
